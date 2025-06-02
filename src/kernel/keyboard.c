@@ -1,48 +1,65 @@
 #include "../include/keyboard.h"
-#include "../include/screen.h"
 #include "../include/io.h"
+#include "../include/screen.h"
+#include "../include/shell.h"
 
+// Keyboard buffer
 #define BUFFER_SIZE 256
+static char input_buffer[BUFFER_SIZE];
+static uint32_t buffer_pos = 0;
 
-char input_buffer[BUFFER_SIZE];
-int buffer_index = 0;
-
-extern void shell_handle_input(const char* input);
-
-const char scancode_table[] = {
-    0, 27, '1','2','3','4','5','6','7','8','9','0','-','=', '\b', // Backspace
-    '\t',                                                        // Tab
-    'q','w','e','r','t','y','u','i','o','p','[',']','\n',        // Enter key
-    0,                                                           // Ctrl
-    'a','s','d','f','g','h','j','k','l',';','\'','`',
-    0,                              // Left shift
-    '\\','z','x','c','v','b','n','m',',','.','/',
-    0,                              // Right shift
-    '*',
-    0,                              // Alt
-    ' ',                            // Spacebar
-    0,                              // Caps lock
-    // ... more as needed
+// US keyboard layout scancode to ASCII
+static const char scancode_to_ascii[] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
+    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0,
+    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' '
 };
 
-void keyboard_handler(registers_t r) {
-    uint8_t scancode = inb(0x60);
+void init_keyboard() {
+    // Simple polling-based keyboard for now
+    buffer_pos = 0;
+}
 
-    if (scancode > sizeof(scancode_table)) return;
-
-    char key = scancode_table[scancode];
-    if (!key) return;
-
-    if (key == '\n') {
-        input_buffer[buffer_index] = '\0';  // Null-terminate string
+void keyboard_callback(uint8_t scancode) {
+    // Handle key release (bit 7 set)
+    if (scancode & 0x80) {
+        return;
+    }
+    
+    // Handle special keys
+    if (scancode == KEY_ENTER) {
+        // Null-terminate the buffer
+        input_buffer[buffer_pos] = '\0';
         print("\n");
-        shell_handle_input(input_buffer);   // Send to shell
-        buffer_index = 0;                   // Reset for next command
-    } else {
-        if (buffer_index < BUFFER_SIZE - 1) {
-            input_buffer[buffer_index++] = key;
-            char str[2] = {key, '\0'};
-            print(str);
+        
+        // Process the command
+        shell_process_command(input_buffer);
+        
+        // Reset buffer
+        buffer_pos = 0;
+    } 
+    else if (scancode == KEY_BACKSPACE && buffer_pos > 0) {
+        buffer_pos--;
+        backspace();
+    }
+    // Handle regular keys
+    else if (scancode < sizeof(scancode_to_ascii) && scancode_to_ascii[scancode]) {
+        char c = scancode_to_ascii[scancode];
+        if (buffer_pos < BUFFER_SIZE - 1) {
+            input_buffer[buffer_pos++] = c;
+            print_char(c);
         }
+    }
+}
+
+// Poll keyboard for input (simple approach without interrupts)
+void keyboard_poll() {
+    uint8_t status = inb(KEYBOARD_COMMAND_PORT);
+    
+    // Check if output buffer is full (bit 0 of status)
+    if (status & 1) {
+        uint8_t scancode = inb(KEYBOARD_DATA_PORT);
+        keyboard_callback(scancode);
     }
 }

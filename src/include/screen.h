@@ -3,14 +3,17 @@
 
 #include <stdint.h>
 
-#define VIDEO_ADDRESS 0xB8000
-#define MAX_ROWS 25
-#define MAX_COLS 80
-#define WHITE_ON_BLACK 0x0F
+// Video memory constants
+#define VIDEO_MEMORY 0xB8000
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define VGA_COLOR_WHITE_ON_BLACK 0x0F
 
+// Screen functions
+void init_screen();
 void clear_screen();
-void print(const char* str);
+void print(const char* message);
 void print_char(char c);
-void print_num(int num);
+void backspace();
 
 #endif

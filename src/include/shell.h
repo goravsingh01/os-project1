@@ -1,7 +1,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+// Shell functions
 void shell_start();
-void shell_handle_input(const char* input);
+void shell_process_command(const char* command);
 
 #endif

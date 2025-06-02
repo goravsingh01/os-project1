@@ -1,12 +1,13 @@
-// io.c - ONLY low-level I/O functions
 #include "../include/io.h"
 
+// Read a byte from port
 uint8_t inb(uint16_t port) {
-    uint8_t ret;
-    __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
+    uint8_t result;
+    __asm__ volatile("inb %1, %0" : "=a" (result) : "Nd" (port));
+    return result;
 }
 
-void outb(uint16_t port, uint8_t val) {
-    __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
+// Write a byte to port
+void outb(uint16_t port, uint8_t value) {
+    __asm__ volatile("outb %0, %1" : : "a" (value), "Nd" (port));
 }

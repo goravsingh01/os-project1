@@ -1,15 +1,15 @@
-OUTPUT_FORMAT(elf32-i386)
-ENTRY(start)
+ENTRY(_start)
 SECTIONS
 {
-    . = 0x100000; /* Load address: 1 MB */
+    . = 0x100000;          /* Load at 1MB */
 
     .text : {
+        *(.multiboot)      /* Multiboot header first */
         *(.text)
     }
 
     .rodata : {
-        *(.rodata*)
+        *(.rodata)
     }
 
     .data : {
@@ -17,6 +17,6 @@ SECTIONS
     }
 
     .bss : {
-        *(.bss COMMON)
+        *(.bss)
     }
 }

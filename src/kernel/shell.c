@@ -1,28 +1,37 @@
+#include "../include/shell.h"
 #include "../include/screen.h"
 #include "../include/string.h"
-#include "../include/shell.h"
 
 void shell_start() {
-    print("CLI OS Ready\n");
+    print("Simple OS Shell v0.1\n");
+    print("Type 'help' for available commands\n");
     print("> ");
 }
 
-void shell_handle_input(const char* input) {
-    if (strcmp(input, "help") == 0) {
+void shell_process_command(const char* command) {
+    if (strcmp(command, "help") == 0) {
         print("Available commands:\n");
-        print("help - Show this help\n");
-        print("clear - Clear the screen\n");
-        print("echo - Repeat what you type\n");
-    } else if (strcmp(input, "clear") == 0) {
+        print("  help    - Display this help message\n");
+        print("  clear   - Clear the screen\n");
+        print("  echo    - Echo the arguments\n");
+        print("  version - Display OS version\n");
+    }
+    else if (strcmp(command, "clear") == 0) {
         clear_screen();
-    } else if (strncmp(input, "echo ", 5) == 0) {
-        print(input + 5);
-        print("\n");
-    } else {
-        print("Unknown command: ");
-        print(input);
+    }
+    else if (strncmp(command, "echo ", 5) == 0) {
+        print(command + 5);
         print("\n");
     }
-
+    else if (strcmp(command, "version") == 0) {
+        print("Simple OS v0.1\n");
+    }
+    else if (command[0] != '\0') {
+        print("Unknown command: ");
+        print(command);
+        print("\n");
+    }
+    
+    // Show prompt
     print("> ");
 }
